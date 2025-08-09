@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Selamat Ulang Tahun Sayang</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(circle, #ff9a9e, #fad0c4);
+      color: white;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 3em;
+      margin-top: 20vh;
+      animation: fadeInDown 2s ease-in-out;
+      text-shadow: 0 0 10px #fff, 0 0 20px #ff477e, 0 0 30px #ff0a54;
+    }
+
+    p {
+      font-size: 1.5em;
+      animation: fadeInUp 3s ease-in-out;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-50px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>🎉 Selamat Ulang Tahun ke-25, Sayang ❤️</h1>
+  <p>Semoga semua doa dan harapanmu di tahun ini terkabul.<br>
+    Loveyou! 💕</p>
+
+  <!-- Musik dari file MP3 -->
+  <audio id="bgmusic" autoplay loop>
+    <source src="hbd.mp3" type="audio/mpeg">
+  </audio>
+
+  <canvas id="confetti"></canvas>
+  <canvas id="fireworks"></canvas>
+
+  <script>
+    // ==== Confetti ====
+    const confettiCanvas = document.getElementById('confetti');
+    const confettiCtx = confettiCanvas.getContext('2d');
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+
+    let confettiPieces = [];
+    const confettiColors = ['#ff0a54', '#ff477e', '#ff7096', '#ff85a1', '#fbb1bd', '#f9bec7'];
+
+    function randomRange(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    function createConfetti() {
+      for (let i = 0; i < 150; i++) {
+        confettiPieces.push({
+          x: Math.random() * confettiCanvas.width,
+          y: Math.random() * confettiCanvas.height,
+          r: randomRange(2, 6),
+          color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+          speed: randomRange(2, 5),
+          drift: randomRange(-2, 2)
+        });
+      }
+    }
+
+    function drawConfetti() {
+      confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      confettiPieces.forEach((p) => {
+        confettiCtx.beginPath();
+        confettiCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2, false);
+        confettiCtx.fillStyle = p.color;
+        confettiCtx.fill();
+      });
+    }
+
+    function updateConfetti() {
+      confettiPieces.forEach((p) => {
+        p.y += p.speed;
+        p.x += p.drift;
+        if (p.y > confettiCanvas.height) {
+          p.y = -10;
+          p.x = Math.random() * confettiCanvas.width;
+        }
+      });
+    }
+
+    function loopConfetti() {
+      drawConfetti();
+      updateConfetti();
+      requestAnimationFrame(loopConfetti);
+    }
+
+    createConfetti();
+    loopConfetti();
+
+    // ==== Fireworks ====
+    const fwCanvas = document.getElementById('fireworks');
+    const fwCtx = fwCanvas.getContext('2d');
+    fwCanvas.width = window.innerWidth;
+    fwCanvas.height = window.innerHeight;
+
+    let fireworks = [];
+
+    function Firework(x, y) {
+      this.x = x;
+      this.y = y;
+      this.particles = [];
+      for (let i = 0; i < 50; i++) {
+        this.particles.push({
+          x: x,
+          y: y,
+          angle: Math.random() * 2 * Math.PI,
+          speed: Math.random() * 5 + 2,
+          radius: 2,
+          alpha: 1,
+          color: confettiColors[Math.floor(Math.random() * confettiColors.length)]
+        });
+      }
+    }
+
+    Firework.prototype.update = function () {
+      this.particles.forEach(p => {
+        p.x += Math.cos(p.angle) * p.speed;
+        p.y += Math.sin(p.angle) * p.speed;
+        p.alpha -= 0.02;
+      });
+    };
+
+    Firework.prototype.draw = function () {
+      this.particles.forEach(p => {
+        fwCtx.beginPath();
+        fwCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2, false);
+        fwCtx.fillStyle = `rgba(${hexToRgb(p.color)},${p.alpha})`;
+        fwCtx.fill();
+      });
+    };
+
+    function hexToRgb(hex) {
+      let bigint = parseInt(hex.slice(1), 16);
+      let r = (bigint >> 16) & 255;
+      let g = (bigint >> 8) & 255;
+      let b = bigint & 255;
+      return `${r},${g},${b}`;
+    }
+
+    function loopFireworks() {
+      fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+      fireworks.forEach((fw, i) => {
+        fw.update();
+        fw.draw();
+        if (fw.particles[0].alpha <= 0) {
+          fireworks.splice(i, 1);
+        }
+      });
+      requestAnimationFrame(loopFireworks);
+    }
+
+    setInterval(() => {
+      let x = Math.random() * fwCanvas.width;
+      let y = Math.random() * fwCanvas.height * 0.5;
+      fireworks.push(new Firework(x, y));
+    }, 1000);
+
+    loopFireworks();
+
+    // ==== Autoplay Fix ====
+    document.addEventListener('click', () => {
+      const audio = document.getElementById('bgmusic');
+      if (audio.paused) audio.play();
+    });
+
+    window.addEventListener('resize', () => {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+      fwCanvas.width = window.innerWidth;
+      fwCanvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+
+</html>
